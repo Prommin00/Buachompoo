@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ประวัติแชต | PPG</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .wrap{max-width:900px;margin:18px auto;padding:0 12px}
+    .card{background:#fff;border-radius:12px;padding:14px;box-shadow:0 10px 25px rgba(0,0,0,.08)}
+    .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .muted{color:#666;font-size:13px}
+    .btn{border:none;border-radius:10px;padding:8px 12px;cursor:pointer}
+    .btn-primary{background:#0b63f6;color:#fff}
+    .btn-ghost{background:#eef2ff}
+    .log{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+    .item{border:1px solid #eee;border-radius:12px;padding:10px}
+    .item .who{font-weight:700;margin-bottom:6px}
+    .item.user{background:#f8fbff}
+    .item.bot{background:#fbfbfb}
+    pre{white-space:pre-wrap;word-break:break-word;margin:0}
+  </style>
+</head>
+<body>
+
+<nav class="topbar">
+  <span>PPG ผู้ช่วยตอบคำถามภายในวิทยาลัยการอาชีพขาณุวรลักษบุรี</span>
+  <div>
+    <a href="index.html">💬 หน้าแชต</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="card">
+    <div class="row" style="justify-content:space-between;">
+      <div>
+        <div style="font-size:18px;font-weight:800;">📝 ประวัติแชต</div>
+        <div class="muted">เก็บไว้ในเครื่องนี้ (LocalStorage) และแยกตาม userKey</div>
+      </div>
+      <div class="row">
+        <button class="btn btn-ghost" onclick="copyUserKey()">คัดลอก userKey</button>
+        <button class="btn btn-primary" onclick="clearHistory()">ล้างประวัติ</button>
+      </div>
+    </div>
+
+    <div class="muted" style="margin-top:10px;">
+      userKey: <span id="userKeyText" style="font-weight:700;"></span>
+    </div>
+
+    <div id="empty" class="muted" style="margin-top:14px;display:none;">ยังไม่มีประวัติแชต</div>
+    <div id="log" class="log"></div>
+  </div>
+</div>
+
+<script>
+function getUserKey(){
+  let k = localStorage.getItem("ppg_user_key");
+  if(!k){
+    k = "guest_" + (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random());
+    localStorage.setItem("ppg_user_key", k);
+  }
+  return k;
+}
+function loadHistory(){
+  const k = getUserKey();
+  const raw = localStorage.getItem("ppg_history_" + k);
+  try { return raw ? JSON.parse(raw) : []; } catch { return []; }
+}
+function render(){
+  const k = getUserKey();
+  document.getElementById("userKeyText").textContent = k;
+  const items = loadHistory();
+  const log = document.getElementById("log");
+  const empty = document.getElementById("empty");
+  log.innerHTML = "";
+  if(!items.length){
+    empty.style.display = "block";
+    return;
+  }
+  empty.style.display = "none";
+  for(const m of items){
+    const div = document.createElement("div");
+    div.className = "item " + (m.role === "user" ? "user" : "bot");
+    div.innerHTML = '<div class="who">' + (m.role === "user" ? "คุณ" : "PPG") + '</div><pre></pre>';
+    div.querySelector("pre").textContent = m.content || "";
+    log.appendChild(div);
+  }
+}
+function clearHistory(){
+  const k = getUserKey();
+  if(confirm("ต้องการล้างประวัติแชตของ userKey นี้หรือไม่?")){
+    localStorage.removeItem("ppg_history_" + k);
+    render();
+  }
+}
+function copyUserKey(){
+  const k = getUserKey();
+  navigator.clipboard?.writeText(k);
+  alert("คัดลอกแล้ว: " + k);
+}
+render();
+</script>
+
+</body>
+</html>
