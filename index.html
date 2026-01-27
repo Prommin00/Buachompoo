@@ -144,6 +144,27 @@
   // Render once in case user searches immediately
   renderFAQList();
 </script>
+<!-- FAQ Floating Button -->
+<button class="faq-fab" id="faqFab" title="FAQ">❓</button>
 
+<!-- FAQ Panel -->
+<div class="faq-panel" id="faqPanel">
+  <div class="faq-header">
+    <span>📚 คำถามที่พบบ่อย (FAQ)</span>
+    <button id="faqClose" class="faq-close" type="button">✖</button>
+  </div>
+
+  <div class="faq-body">
+    <input class="faq-search" id="faqSearch" placeholder="ค้นหาคำถาม..." />
+
+    <div class="faq-chips">
+      <button class="faq-chip" type="button" data-tag="เวลาเปิด-ปิด">🕒 เวลาเปิด-ปิด</button>
+      <button class="faq-chip" type="button" data-tag="งานทะเบียน">📄 งานทะเบียน</button>
+      <button class="faq-chip" type="button" data-tag="กิจกรรม">🎉 กิจกรรม</button>
+    </div>
+
+    <div class="faq-list" id="faqList"></div>
+  </div>
+</div>
 </body>
 </html>

@@ -137,3 +137,71 @@ document.addEventListener("DOMContentLoaded", () => {
     // sendMessage();
   };
 });
+(function initFAQ(){
+  const fab = document.getElementById("faqFab");
+  const panel = document.getElementById("faqPanel");
+  const closeBtn = document.getElementById("faqClose");
+  const listEl = document.getElementById("faqList");
+  const searchEl = document.getElementById("faqSearch");
+
+  if (!fab || !panel || !listEl) return;
+
+  const FAQ = (window.PPG_FAQ || []).map(x => ({
+    q: x.q || "",
+    a: x.a || "",
+    tag: x.tag || "" // ถ้าไม่มี tag ก็ว่าง
+  }));
+
+  function render(items){
+    listEl.innerHTML = "";
+    if (!items.length){
+      listEl.innerHTML = `<div style="color:#666;font-size:13px;">ไม่พบคำถามที่ตรงกัน</div>`;
+      return;
+    }
+
+    items.forEach((it) => {
+      const wrap = document.createElement("div");
+      wrap.className = "faq-item";
+      wrap.innerHTML = `
+        <button class="faq-q" type="button">
+          <span>${escapeHtml(it.q)}</span>
+          <span>▾</span>
+        </button>
+        <div class="faq-a">${escapeHtml(it.a).replace(/\n/g,"<br>")}</div>
+      `;
+      wrap.querySelector(".faq-q").addEventListener("click", () => {
+        wrap.classList.toggle("open");
+      });
+      listEl.appendChild(wrap);
+    });
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  fab.addEventListener("click", () => panel.classList.add("open"));
+  closeBtn.addEventListener("click", () => panel.classList.remove("open"));
+
+  document.querySelectorAll(".faq-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tag = btn.getAttribute("data-tag") || "";
+      const filtered = FAQ.filter(x => (x.q+x.a).includes(tag));
+      render(filtered.length ? filtered : FAQ);
+    });
+  });
+
+  if (searchEl){
+    searchEl.addEventListener("input", () => {
+      const t = searchEl.value.trim();
+      const filtered = !t ? FAQ : FAQ.filter(x =>
+        (x.q+x.a).toLowerCase().includes(t.toLowerCase())
+      );
+      render(filtered);
+    });
+  }
+
+  render(FAQ);
+})();
