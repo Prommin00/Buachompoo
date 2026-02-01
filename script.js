@@ -1,71 +1,74 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // -----------------------------
-  // Config + Elements
-  // -----------------------------
-  const API_URL =
-    window.PPG_API_URL || "https://ppg-chat-api.2551prommin.workers.dev/";
-
+  // =========================
+  // CONFIG + ELEMENTS
+  // =========================
   const input = document.getElementById("user-input");
   const box = document.getElementById("chat-box");
   const btn = document.getElementById("send-btn");
 
-  if (!input || !box || !btn) {
-    console.error("Missing required elements: #user-input, #chat-box, #send-btn");
-    return;
-  }
+  const apiUrl = window.PPG_API_URL || "https://ppg-chat-api.2551prommin.workers.dev/";
 
-  // -----------------------------
-  // UserKey + History (localStorage)
-  // -----------------------------
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+  // =========================
+  // USER KEY + LOCAL HISTORY
+  // =========================
   function getUserKey() {
     let k = localStorage.getItem("ppg_user_key");
     if (!k) {
       k =
         "guest_" +
-        (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + "_" + Math.random());
+        (crypto.randomUUID
+          ? crypto.randomUUID()
+          : String(Date.now()) + "_" + Math.random().toString(16).slice(2));
       localStorage.setItem("ppg_user_key", k);
     }
     return k;
   }
 
-  function historyKey() {
-    return "ppg_history_" + getUserKey();
-  }
-
   function loadLocalHistory() {
     try {
-      const raw = localStorage.getItem(historyKey());
-      const arr = raw ? JSON.parse(raw) : [];
-      return Array.isArray(arr) ? arr : [];
+      const k = getUserKey();
+      const raw = localStorage.getItem("ppg_history_" + k);
+      return raw ? JSON.parse(raw) : [];
     } catch {
       return [];
     }
   }
 
   function saveLocalHistory(items) {
-    try {
-      // เก็บแค่ 80 ข้อความล่าสุด (กันหน่วง)
-      const capped = items.slice(-80);
-      localStorage.setItem(historyKey(), JSON.stringify(capped));
-    } catch {}
+    const k = getUserKey();
+    localStorage.setItem("ppg_history_" + k, JSON.stringify(items.slice(-200)));
   }
 
   let history = loadLocalHistory();
 
-  // -----------------------------
-  // UI Helpers
-  // -----------------------------
-  function appendMessage(role, text) {
-    const div = document.createElement("div");
-    div.className = `bubble ${role === "user" ? "user" : "bot"}`;
-
-    // ใช้ innerText เพื่อปลอดภัย + รองรับขึ้นบรรทัดใหม่
-    div.innerText = String(text ?? "");
-    box.appendChild(div);
-
-    // เลื่อนลงล่างสุดเสมอ
+  // =========================
+  // RENDER
+  // =========================
+  function appendBubble(role, text) {
+    const cls = role === "user" ? "user" : "bot";
+    // ใช้ div + esc แล้วให้ CSS จัด pre-wrap (แก้บรรทัดใหม่ติดกัน)
+    box.innerHTML += `<div class="bubble ${cls}">${esc(text)}</div>`;
     box.scrollTop = box.scrollHeight;
   }
+
+  function renderHistoryToChatBox() {
+    box.innerHTML = "";
+    if (!history.length) {
+      appendBubble("assistant", "สวัสดีครับ 👋 มีอะไรให้ PPG ช่วยไหมครับ?");
+      return;
+    }
+    for (const m of history) {
+      appendBubble(m.role, m.content);
+    }
+  }
+
+  renderHistoryToChatBox();
 
   function showTyping(on) {
     let typing = document.getElementById("typing-bubble");
@@ -74,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
         typing = document.createElement("div");
         typing.id = "typing-bubble";
         typing.className = "bubble bot typing";
-        typing.innerText = "กำลังพิมพ์...";
+        typing.textContent = "กำลังตอบ...";
         box.appendChild(typing);
       }
       box.scrollTop = box.scrollHeight;
@@ -83,48 +86,33 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // -----------------------------
-  // Initial render
-  // -----------------------------
-  if (history.length === 0) {
-    appendMessage("bot", "สวัสดีครับ มีอะไรให้ PPG ช่วยไหมครับ?");
-  } else {
-    history.forEach((h) => {
-      // รองรับทั้ง role: "bot" และ role: "assistant"
-      const r = h.role === "user" ? "user" : "bot";
-      appendMessage(r, h.content);
-    });
-  }
-
-  // -----------------------------
-  // Send Message
-  // -----------------------------
+  // =========================
+  // SEND MESSAGE
+  // =========================
   async function sendMessage() {
-    const text = input.value.trim();
-    if (!text) return;
+    const msg = input.value.trim();
+    if (!msg) return;
 
-    // แสดงข้อความของเรา
-    appendMessage("user", text);
-    history.push({ role: "user", content: text, ts: Date.now() });
-    saveLocalHistory(history);
-
-    // เคลียร์ช่องพิมพ์ + โฟกัส (มือถือบางรุ่นช่วยให้คีย์บอร์ดอยู่ต่อ)
+    appendBubble("user", msg);
     input.value = "";
-    input.focus();
+
+    history.push({ role: "user", content: msg, ts: Date.now() });
+    saveLocalHistory(history);
 
     showTyping(true);
     btn.disabled = true;
 
-    // timeout กันค้าง
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 35000);
 
     try {
-      const res = await fetch(API_URL, {
+      if (!apiUrl) throw new Error("ยังไม่ได้ตั้งค่า API URL");
+
+      const res = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // ✅ ส่ง userKey ไปด้วย (รองรับระบบแยก user / อนาคต)
-        body: JSON.stringify({ message: text, userKey: getUserKey() }),
+        // ใส่ userKey เผื่ออนาคตคุณอยากทำ history ฝั่ง server
+        body: JSON.stringify({ message: msg, userKey: getUserKey() }),
         signal: controller.signal,
       });
 
@@ -132,30 +120,26 @@ document.addEventListener("DOMContentLoaded", () => {
       showTyping(false);
 
       if (!res.ok) {
-        const errMsg =
-          data?.error ||
-          data?.detail?.error?.message ||
-          `Server error (${res.status})`;
-        appendMessage("bot", "ขออภัย: " + errMsg);
-        history.push({ role: "bot", content: "ขออภัย: " + errMsg, ts: Date.now() });
+        const detail = data?.error || "ระบบตอบกลับผิดพลาด";
+        appendBubble("assistant", "ขออภัย: " + detail);
+        history.push({ role: "assistant", content: "ขออภัย: " + detail, ts: Date.now() });
         saveLocalHistory(history);
         return;
       }
 
-      const reply = data?.reply ?? "ขออภัย ระบบไม่สามารถตอบได้ในขณะนี้";
-      appendMessage("bot", reply);
-      history.push({ role: "bot", content: reply, ts: Date.now() });
+      const reply = data.reply || "ขออภัย ระบบไม่สามารถตอบได้ในขณะนี้";
+      appendBubble("assistant", reply);
+      history.push({ role: "assistant", content: reply, ts: Date.now() });
       saveLocalHistory(history);
-    } catch (err) {
+    } catch (e) {
       showTyping(false);
-      const msg =
-        err?.name === "AbortError"
+      const msgErr =
+        e.name === "AbortError"
           ? "AI ตอบช้าเกินไป กรุณาลองใหม่"
-          : "เกิดข้อผิดพลาดในการเชื่อมต่อ";
-      appendMessage("bot", msg);
-      history.push({ role: "bot", content: msg, ts: Date.now() });
+          : "เกิดข้อผิดพลาด: " + (e.message || String(e));
+      appendBubble("assistant", msgErr);
+      history.push({ role: "assistant", content: msgErr, ts: Date.now() });
       saveLocalHistory(history);
-      console.error(err);
     } finally {
       clearTimeout(timer);
       btn.disabled = false;
@@ -164,26 +148,100 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // -----------------------------
-  // Events
-  // -----------------------------
   btn.addEventListener("click", sendMessage);
-
-  // ✅ Enter = ส่ง, Shift+Enter = ขึ้นบรรทัดใหม่
   input.addEventListener("keydown", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
+    if (e.key === "Enter") sendMessage();
   });
 
-  // -----------------------------
-  // Optional: expose to FAQ click (ถ้าใช้)
-  // -----------------------------
+  // =========================
+  // FAQ: expose for click-to-fill
+  // =========================
   window.askFromFAQ = function (question) {
-    input.value = String(question || "");
+    input.value = question;
     input.focus();
-    // ถ้าอยากให้คลิกแล้วส่งทันที ให้เอาคอมเมนต์ออก
+    // ถ้าอยากให้คลิกแล้วส่งเลย ให้เปิดบรรทัดนี้:
     // sendMessage();
   };
+
+  // =========================
+  // INIT FAQ PANEL
+  // =========================
+  (function initFAQ() {
+    const fab = document.getElementById("faqFab");
+    const panel = document.getElementById("faqPanel");
+    const closeBtn = document.getElementById("faqClose");
+    const listEl = document.getElementById("faqList");
+    const searchEl = document.getElementById("faqSearch");
+
+    // ถ้า id ใน HTML ไม่ตรง จะกดแล้วไม่เปิด
+    if (!fab || !panel || !closeBtn || !listEl) return;
+
+    const FAQ = (window.PPG_FAQ || []).map((x) => ({
+      id: x.id || "",
+      q: x.q || "",
+      a: x.a || "",
+      tag: x.tag || "",
+    }));
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (m) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m])
+      );
+    }
+
+    function render(items) {
+      listEl.innerHTML = "";
+      if (!items.length) {
+        listEl.innerHTML = `<div style="color:#666;font-size:13px;">ไม่พบคำถามที่ตรงกัน</div>`;
+        return;
+      }
+
+      items.forEach((it) => {
+        const wrap = document.createElement("div");
+        wrap.className = "faq-item";
+        wrap.innerHTML = `
+          <button class="faq-q" type="button">
+            <span>${escapeHtml(it.q)}</span>
+            <span>▾</span>
+          </button>
+          <div class="faq-a">${escapeHtml(it.a).replace(/\n/g, "<br>")}</div>
+        `;
+
+        wrap.querySelector(".faq-q").addEventListener("click", () => {
+          wrap.classList.toggle("open");
+        });
+
+        // ถ้าอยากให้คลิกคำถามแล้วเอาไปใส่ช่องพิมพ์ทันที (คล้ายเดิม)
+        wrap.querySelector(".faq-q").addEventListener("dblclick", () => {
+          window.askFromFAQ(it.q);
+          panel.classList.remove("open");
+        });
+
+        listEl.appendChild(wrap);
+      });
+    }
+
+    fab.addEventListener("click", () => panel.classList.add("open"));
+    closeBtn.addEventListener("click", () => panel.classList.remove("open"));
+
+    document.querySelectorAll(".faq-chip").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tag = btn.getAttribute("data-tag") || "";
+        const filtered = FAQ.filter((x) => (x.q + x.a).includes(tag));
+        render(filtered.length ? filtered : FAQ);
+      });
+    });
+
+    if (searchEl) {
+      searchEl.addEventListener("input", () => {
+        const t = searchEl.value.trim().toLowerCase();
+        const filtered = !t
+          ? FAQ
+          : FAQ.filter((x) => (x.q + x.a).toLowerCase().includes(t));
+        render(filtered);
+      });
+    }
+
+    render(FAQ);
+  })();
 });
