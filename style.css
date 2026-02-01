@@ -1,123 +1,140 @@
+/* ===== Base ===== */
+:root{
+  --bg:#f2f4f7;
+  --card:#ffffff;
+  --brand:#1e40af;
+  --primary:#0b5cff;
+  --line:#e5e7eb;
+  --bot:#e5e7eb;
+  --user:#007bff;
+
+  /* กัน iOS notch + keyboard */
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
 body{
-  font-family:Segoe UI,Arial;
+  font-family:Segoe UI,Arial,system-ui,sans-serif;
   margin:0;
-  background:#f2f4f7;
+  background:var(--bg);
+  color:#111827;
 }
-.title{text-align:center;margin:15px 0}
+
+/* ===== Topbar ===== */
 .topbar{
-  background:#1e40af;color:#fff;
-  padding:10px;display:flex;
-  justify-content:space-between
+  position:sticky;
+  top:0;
+  z-index:20;
+  background:var(--brand);
+  color:#fff;
+  padding:10px 12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
 }
-.topbar a{color:#fff;margin-left:10px;text-decoration:none}
+.topbar__title{ font-weight:700; font-size:14px; line-height:1.2; }
+.topbar__links{ display:flex; gap:10px; align-items:center; }
+.topbar a{ color:#fff; text-decoration:none; opacity:.95; }
+.topbar a:hover{ opacity:1; }
+
+/* ===== Layout ===== */
+.page{
+  padding:12px;
+  display:flex;
+  justify-content:center;
+}
+
+/* ทำให้ “เต็มจอ” บนมือถือ และไม่ถูกคีย์บอร์ดทับ */
 .chat-container{
-  max-width:420px;height:85vh;
-  background:#fff;margin:0 auto;
-  border-radius:12px;
-  display:flex;flex-direction:column;
-  box-shadow:0 10px 25px rgba(0,0,0,.1)
+  width:100%;
+  max-width:520px;
+  height:calc(100dvh - 64px); /* ใช้ dvh ให้ยืดตามจอจริงบนมือถือ */
+  background:var(--card);
+  border-radius:14px;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 10px 25px rgba(0,0,0,.10);
+  overflow:hidden;
 }
-.chat-box{flex:1;padding:15px;overflow-y:auto}
+
+/* กล่องแชตเลื่อน */
+.chat-box{
+  flex:1;
+  padding:14px 14px 10px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* bubble */
 .bubble{
-  max-width:75%;padding:10px 14px;
-  margin:8px 0;border-radius:18px;
-  animation:fade .2s ease-in
+  max-width:min(78%, 520px);
+  padding:10px 14px;
+  margin:8px 0;
+  border-radius:18px;
+  white-space:pre-wrap;      /* ✅ แสดง \n เป็นบรรทัดใหม่ */
+  word-break:break-word;
+  animation:fade .15s ease-in;
 }
 @keyframes fade{from{opacity:0}to{opacity:1}}
 .user{
-  background:#007bff;color:#fff;
-  margin-left:auto;border-bottom-right-radius:4px
+  background:var(--user);
+  color:#fff;
+  margin-left:auto;
+  border-bottom-right-radius:6px;
 }
 .bot{
-  background:#e5e7eb;color:#000;
-  margin-right:auto;border-bottom-left-radius:4px
+  background:var(--bot);
+  color:#000;
+  margin-right:auto;
+  border-bottom-left-radius:6px;
 }
-.typing{opacity:.7;font-style:italic}
+.typing{ opacity:.7; font-style:italic; }
+
+/* ===== Input Area ===== */
 .input-area{
-  display:flex;padding:10px;border-top:1px solid #ddd
-}
-input{
-  flex:1;padding:10px;border-radius:20px;
-  border:1px solid #ccc;outline:none
-}
-button{
-  margin-left:8px;padding:0 18px;
-  border:none;border-radius:20px;
-  background:#007bff;color:#fff;cursor:pointer
-}
-/* ===== Login Page ===== */
-.login-page{
-  min-height:100vh;
+  position:sticky;
+  bottom:0;
   display:flex;
-  align-items:center;
-  justify-content:center;
-  background:linear-gradient(135deg,#e0e7ff,#f2f4f7);
+  gap:8px;
+  align-items:flex-end;
+  padding:10px 10px calc(10px + var(--safe-bottom));
+  border-top:1px solid var(--line);
+  background:var(--card);
 }
 
-.login-box{
-  width:100%;
-  max-width:360px;
-  background:#fff;
-  padding:30px;
+/* textarea ที่ขึ้นบรรทัดใหม่ได้ */
+.chat-input{
+  flex:1;
+  padding:10px 12px;
   border-radius:14px;
-  box-shadow:0 15px 40px rgba(0,0,0,.12);
-  text-align:center;
-}
-
-.login-box h1{
-  margin:0;
-  color:#1e40af;
-  font-size:32px;
-}
-
-.subtitle{
-  margin:8px 0 20px;
-  color:#555;
-  font-size:14px;
-}
-
-.login-box input{
-  width:100%;
-  padding:12px 14px;
-  margin-bottom:12px;
-  border-radius:10px;
-  border:1px solid #ccc;
-  font-size:14px;
-}
-
-.login-box input:focus{
-  border-color:#1e40af;
+  border:1px solid #cbd5e1;
   outline:none;
-}
-
-.login-box button{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:10px;
-  background:#1e40af;
-  color:#fff;
   font-size:15px;
+  line-height:1.35;
+  resize:none;
+  max-height:140px;
+  overflow:auto;
+}
+.chat-input:focus{ border-color:var(--primary); }
+
+.send-btn{
+  padding:10px 16px;
+  border:none;
+  border-radius:999px;
+  background:var(--user);
+  color:#fff;
   cursor:pointer;
+  font-size:15px;
+  white-space:nowrap;
 }
 
-.login-box button:hover{
-  background:#1e3a8a;
-}
-
-.error{
-  background:#fee2e2;
-  color:#991b1b;
-  padding:10px;
-  border-radius:8px;
-  margin-bottom:12px;
-  font-size:13px;
-}
 /* ===== FAQ Panel ===== */
 .faq-panel{
   position: fixed;
   left: 18px;
-  bottom: 18px;
+  bottom: calc(18px + var(--safe-bottom));
   width: 360px;
   max-width: calc(100vw - 36px);
   background: #fff;
@@ -127,7 +144,6 @@ button{
   z-index: 999;
   display: none;
 }
-
 .faq-panel.open{ display:block; }
 
 .faq-header{
@@ -139,14 +155,12 @@ button{
   border-bottom: 1px solid #e7ecff;
   font-weight: 700;
 }
-
 .faq-close{
   border:0;
   background:transparent;
   font-size:18px;
   cursor:pointer;
 }
-
 .faq-body{ padding: 12px 14px; }
 
 .faq-search{
@@ -163,12 +177,11 @@ button{
   gap:8px;
   flex-wrap: wrap;
 }
-
 .faq-chip{
   border:0;
   padding: 7px 10px;
   border-radius: 999px;
-  background:#0b5cff;
+  background:var(--primary);
   color:#fff;
   font-size: 13px;
   cursor:pointer;
@@ -176,18 +189,16 @@ button{
 
 .faq-list{
   margin-top: 12px;
-  max-height: 46vh;
+  max-height: 46dvh;
   overflow:auto;
   padding-right: 6px;
 }
-
 .faq-item{
   border: 1px solid #eef2ff;
   border-radius: 12px;
   margin-bottom: 10px;
   overflow:hidden;
 }
-
 .faq-q{
   width:100%;
   text-align:left;
@@ -200,29 +211,44 @@ button{
   justify-content:space-between;
   align-items:center;
 }
-
 .faq-a{
   display:none;
   padding: 10px 12px;
   background:#fafbff;
   border-top: 1px solid #eef2ff;
   line-height: 1.45;
+  white-space:pre-wrap;
 }
-
 .faq-item.open .faq-a{ display:block; }
 
 .faq-fab{
   position: fixed;
   left: 18px;
-  bottom: 18px;
+  bottom: calc(18px + var(--safe-bottom));
   width: 54px;
   height: 54px;
   border-radius: 999px;
   border:0;
-  background:#0b5cff;
+  background:var(--primary);
   color:#fff;
   cursor:pointer;
   z-index: 1000;
   box-shadow: 0 14px 40px rgba(0,0,0,.12);
   font-size: 18px;
+}
+
+/* ===== Small screens tweaks ===== */
+@media (max-width: 520px){
+  .page{ padding:0; }
+  .chat-container{
+    max-width:none;
+    height:calc(100dvh - 52px);
+    border-radius:0;
+    box-shadow:none;
+  }
+  .faq-panel, .faq-fab{
+    left:12px;
+    bottom:calc(12px + var(--safe-bottom));
+    max-width:calc(100vw - 24px);
+  }
 }
