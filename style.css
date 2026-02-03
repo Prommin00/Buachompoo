@@ -82,7 +82,7 @@ html, body { height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif
 
 /* ===== FAQ Panel ===== */
 .faq-fab {
-  position: fixed; bottom: 70px; right: 20px; width: 50px; height: 50px;
+  position: fixed; bottom: 70px; right: 30px; width: 50px; height: 50px;
   border-radius: 50%; background: var(--primary); color: #fff;
   border: none; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   z-index: 100;
