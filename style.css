@@ -67,7 +67,7 @@ body{
   -webkit-overflow-scrolling:touch;
 }
 
-/* bubble */
+/* bubble (base) */
 .bubble{
   max-width:min(78%, 520px);
   padding:10px 14px;
@@ -78,6 +78,7 @@ body{
   animation:fade .15s ease-in;
 }
 @keyframes fade{from{opacity:0}to{opacity:1}}
+
 .user{
   background:var(--user);
   color:#fff;
@@ -104,7 +105,6 @@ body{
   background:var(--card);
 }
 
-/* textarea ที่ขึ้นบรรทัดใหม่ได้ + โตตามเนื้อหา (ถ้าต้องการ auto-grow ให้ใส่ JS) */
 .chat-input{
   flex:1;
   padding:10px 12px;
@@ -246,8 +246,13 @@ body{
     border-radius:0;
     box-shadow:none;
   }
-  .faq-panel, .faq-fab{ left:12px; bottom:calc(12px + var(--safe-bottom)); max-width:calc(100vw - 24px); }
+  .faq-panel, .faq-fab{
+    left:12px;
+    bottom:calc(12px + var(--safe-bottom));
+    max-width:calc(100vw - 24px);
+  }
 }
+
 /* ====== Chat message layout with avatar (FINAL) ====== */
 .msg-row{
   display:flex;
@@ -274,6 +279,13 @@ body{
   max-width:78%;
   flex:1 1 auto;
   min-width:0;       /* สำคัญมากใน flex */
+}
+
+/* FIX: กัน bubble "บี้" เพราะ .user/.bot เดิมมี auto-margin */
+.msg-row .bubble.user,
+.msg-row .bubble.bot{
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 /* หางบอท (optional) */
