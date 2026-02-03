@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // =========================
   // RENDER CHAT
   // =========================
- const BOT_AVATAR_URL = "bot.png"; // หรือใส่ลิงก์รูปเต็มก็ได้
+ const BOT_AVATAR_URL = "https://scontent.fphs1-1.fna.fbcdn.net/v/t39.30808-6/460613357_122102726348525819_6646342785750101957_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=Lb104aLNJpAQ7kNvwGN-EU2&_nc_oc=AdkqBRr4vI8uY4dCL7kueRr4pNkiICg4Evqv6HXNDg9tIXMXNbMB145ECTyDbouS4BY&_nc_zt=23&_nc_ht=scontent.fphs1-1.fna&_nc_gid=RAVQNpuMOVUEHpWGg4ancg&oh=00_AfvKsXz1BF2x3D4CohCNjAcwVs2xh7Iy-rSED3PwHFrDrw&oe=69876417"; // หรือใส่ลิงก์รูปเต็มก็ได้
 
 function appendBubble(role, text) {
   const cls = role === "user" ? "user" : "bot";
