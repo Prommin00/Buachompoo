@@ -61,27 +61,31 @@ document.addEventListener("DOMContentLoaded", () => {
  const BOT_AVATAR_URL = "image.png"; // หรือใส่ลิงก์รูปเต็มก็ได้
 
 function appendBubble(role, text) {
-  const cls = role === "user" ? "user" : "bot";
+  const isUser = role === "user";
 
-  const msg = document.createElement("div");
-  msg.className = `msg ${cls}`;
+  // แถวข้อความ (รูป + bubble)
+  const row = document.createElement("div");
+  row.className = `msg-row ${isUser ? "user" : "bot"}`;
 
-  // avatar เฉพาะ bot
-  if (cls === "bot") {
-    const av = document.createElement("div");
+  // avatar เฉพาะฝั่ง bot
+  if (!isUser) {
+    const av = document.createElement("img");
     av.className = "avatar";
-    av.innerHTML = `<img src="${BOT_AVATAR_URL}" alt="bot">`;
-    msg.appendChild(av);
+    av.src = BOT_AVATAR_URL; // เช่น "./ppg_avatar.png"
+    av.alt = "PPG";
+    row.appendChild(av);
   }
 
+  // bubble ข้อความ
   const bubble = document.createElement("div");
-  bubble.className = `bubble ${cls}`;
+  bubble.className = `bubble ${isUser ? "user" : "bot"}`;
   bubble.innerHTML = esc(text).replace(/\n/g, "<br>");
-  msg.appendChild(bubble);
 
-  box.appendChild(msg);
+  row.appendChild(bubble);
+  box.appendChild(row);
   box.scrollTop = box.scrollHeight;
 }
+
 
   function renderHistory() {
     box.innerHTML = "";
