@@ -19,6 +19,22 @@ html, body { height: 100%; margin: 0; font-family: 'Segoe UI', Arial, sans-serif
   display: flex; justify-content: space-between; align-items: center;
 }
 .topbar__title { font-weight: 700; font-size: 16px; }
+/* จัดกลุ่มโลโก้กับชื่อให้อยู่แนวนอนเดียวกัน */
+.topbar__left {
+  display: flex;
+  align-items: center; /* จัดให้อยู่กึ่งกลางแนวตั้ง */
+  gap: 12px; /* ระยะห่างระหว่างโลโก้กับตัวหนังสือ */
+}
+
+/* กำหนดขนาดโลโก้ */
+.topbar__logo {
+  width: 40px;  /* ปรับขนาดความกว้างตรงนี้ */
+  height: 40px; /* ปรับขนาดความสูงตรงนี้ */
+  border-radius: 50%; /* ทำให้รูปเป็นวงกลม (ถ้าไม่ชอบลบออกได้) */
+  object-fit: cover;
+  background: #fff; /* ใส่พื้นหลังขาวเผื่อรูปเป็น png ใส */
+  border: 2px solid rgba(255,255,255,0.2); /* ขอบจางๆ เพื่อความสวยงาม */
+}
 
 /* ===== Chat Container ===== */
 .page {
