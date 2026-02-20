@@ -46,7 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Avatar (ถ้าเป็น Bot ให้ใส่รูป)
     const avatarHTML = role === 'bot' 
-      ? `<img src="img/av2.png" class="avatar" onerror="this.style.display='none'">` 
+      ? `<img src="img/av3.png" class="avatar" onerror="this.style.display='none'">` 
       : ``;
 
     div.innerHTML = `
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingDiv.id = loadingId;
     loadingDiv.className = "msg-row bot";
     loadingDiv.innerHTML = `
-      <img src="img/av2.png" class="avatar" onerror="this.style.display='none'">
+      <img src="img/av3.png" class="avatar" onerror="this.style.display='none'">
       <div class="bubble bot typing">กำลังพิมพ์...</div>
     `;
     box.appendChild(loadingDiv);
